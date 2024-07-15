@@ -76,8 +76,37 @@ app.post("/send", (req, res) => {
     });
 });
 
-cron.schedule('0 8 * * *', () => {
-    sendDailyCustomerList();
+app.post("/sendReminder",(req,res)=>{
+    const {customer}=req.body;
+
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: `${process.env.MY_MAIL}`,
+            pass: `${process.env.MY_PASSWORD}`
+        }
+    });
+
+    const appointmentTime = new Date(customer.date).getTime();
+    const currentTime = new Date().getTime();
+    const timeDiff = appointmentTime - currentTime;
+    const minutesLeft = Math.floor(timeDiff / (1000 * 60));
+
+    const mailOptions = {
+        from: `${process.env.MY_MAIL}`,
+        to: customer.email, 
+        subject: "Randevu Hatırlatma",
+        text: `Merhaba ${customer.name},\n\nRandevunuz için 1 saatten az zaman kaldı. Lütfen zamanında gelmeyi unutmayın.\n Kalan zaman:${minutesLeft} dakika.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log("E-posta gönderilirken hata oluştu:", error);
+        } else {
+            console.log("E-posta başarıyla gönderildi:", info.response);
+        }
+    });
+
 });
 
 function sendDailyCustomerList() {
@@ -129,13 +158,6 @@ function sendDailyEmail(customerList) {
         }
     });
 }
-
-let sentEmails = new Set();
-setInterval(checkAppointments, 36000); 
-
-setInterval(() => {
-    sentEmails.clear();
-}, 24 * 60 * 60 * 1000); 
 
 function checkAppointments() {
     const currentTime = new Date().getTime();
