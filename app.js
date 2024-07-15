@@ -166,11 +166,6 @@ function sendDailyEmail(customerList) {
 }
 
 let sentEmails = new Set();
-setInterval(checkAppointments, 36000); 
-
-setInterval(() => {
-    sentEmails.clear();
-}, 24 * 60 * 60 * 1000); 
 
 function checkAppointments() {
     console.log("Checking in progress wooooow!");
@@ -190,7 +185,17 @@ function checkAppointments() {
             }
         });
     });
+
+    // Tekrarlı olarak checkAppointments fonksiyonunu çağırmak yerine setTimeout kullanarak bir sonraki çalışmayı planlayın
+    setTimeout(checkAppointments, 36000); // Her saatte bir çalışacak şekilde ayarladım
 }
+
+// İlk çalıştırmayı başlatmak için
+checkAppointments();
+
+setInterval(() => {
+    sentEmails.clear();
+}, 24 * 60 * 60 * 1000); 
 
 function sendReminderEmail(customer) {
     const transporter = nodemailer.createTransport({
