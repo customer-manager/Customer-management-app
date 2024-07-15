@@ -173,7 +173,7 @@ function getTurkeyCurrentTimestamp() {
     return new Date(getTurkeyCurrentTime()).getTime();
 }
 
-//let sentEmails = new Set();
+let sentEmails = new Set();
 sentEmails.clear();
 
 async function checkAppointments() {
