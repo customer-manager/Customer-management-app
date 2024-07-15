@@ -165,8 +165,8 @@ function sendDailyEmail(customerList) {
     });
 }
 
-    let sentEmails = new Set();
-    setInterval(checkAppointments, 36000); 
+let sentEmails = new Set();
+setInterval(checkAppointments, 36000); 
 
 setInterval(() => {
     sentEmails.clear();
