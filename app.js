@@ -171,15 +171,20 @@ async function checkAppointments() {
     console.log("Checking in progress wooooow!");
     const currentTime = new Date().getTime();
     const oneHourLater = currentTime + 3600000;
+    console.log(currentTime);
 
     try {
         const snapshot = await customersRef.once("value");
         snapshot.forEach(async (childSnapshot) => {
             const customer = childSnapshot.val();
+            console.log(customer);
             const appointmentTime = new Date(customer.date).getTime();
+            console.log("here result 1");
 
             if (appointmentTime <= oneHourLater && appointmentTime > currentTime && customer.statu === "gelmedi") {
+                console.log("here result 2");
                 if (!sentEmails.has(customer.email)) {
+                    console.log("here result 3");
                     await sendReminderEmail(customer);
                     sentEmails.add(customer.email);
                 }
