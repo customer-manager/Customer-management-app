@@ -165,16 +165,22 @@ function sendDailyEmail(customerList) {
     });
 }
 
+function getTurkeyCurrentTime() {
+    return new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
+}
+
+function getTurkeyCurrentTimestamp() {
+    return new Date(getTurkeyCurrentTime()).getTime();
+}
+
 let sentEmails = new Set();
 
 async function checkAppointments() {
     console.log("Checking in progress wooooow!");
-    const currentTime = new Date().getTime();
+    const currentTime = getTurkeyCurrentTimestamp();
     const oneHourLater = currentTime + 3600000;
-    console.log(currentTime);
-    console.log(new Date().toLocaleString());
-    console.log(new Date().toLocaleTimeString());
-
+    console.log("currentTime:", currentTime);
+    console.log("currentDateTime:", getTurkeyCurrentTime());
 
     try {
         const snapshot = await customersRef.once("value");
@@ -182,6 +188,9 @@ async function checkAppointments() {
             const customer = childSnapshot.val();
             console.log(customer);
             const appointmentTime = new Date(customer.date).getTime();
+            console.log("appointmentTime:", appointmentTime);
+            console.log("currentTime:", currentTime);
+            console.log("oneHourLater:", oneHourLater);
             console.log("here result 1");
 
             if (appointmentTime <= oneHourLater && appointmentTime > currentTime && customer.statu === "gelmedi") {
@@ -197,7 +206,6 @@ async function checkAppointments() {
         console.error("Error fetching appointments:", error);
     }
 
-    // Tekrarlı olarak checkAppointments fonksiyonunu çağırmak yerine setTimeout kullanarak bir sonraki çalışmayı planlayın
     setTimeout(checkAppointments, 36000); // Her saatte bir çalışacak şekilde ayarladım
 }
 
