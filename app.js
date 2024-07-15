@@ -167,24 +167,27 @@ function sendDailyEmail(customerList) {
 
 let sentEmails = new Set();
 
-function checkAppointments() {
+async function checkAppointments() {
     console.log("Checking in progress wooooow!");
     const currentTime = new Date().getTime();
-    const oneHourLater = currentTime + 3600000; 
+    const oneHourLater = currentTime + 3600000;
 
-    customersRef.once("value", (snapshot) => {
-        snapshot.forEach((childSnapshot) => {
+    try {
+        const snapshot = await customersRef.once("value");
+        snapshot.forEach(async (childSnapshot) => {
             const customer = childSnapshot.val();
             const appointmentTime = new Date(customer.date).getTime();
 
             if (appointmentTime <= oneHourLater && appointmentTime > currentTime && customer.statu === "gelmedi") {
-                if(!sentEmails.has(customer.email)){
-                    sendReminderEmail(customer);
+                if (!sentEmails.has(customer.email)) {
+                    await sendReminderEmail(customer);
                     sentEmails.add(customer.email);
                 }
             }
         });
-    });
+    } catch (error) {
+        console.error("Error fetching appointments:", error);
+    }
 
     // Tekrarlı olarak checkAppointments fonksiyonunu çağırmak yerine setTimeout kullanarak bir sonraki çalışmayı planlayın
     setTimeout(checkAppointments, 36000); // Her saatte bir çalışacak şekilde ayarladım
