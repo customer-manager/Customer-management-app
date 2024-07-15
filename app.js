@@ -8,6 +8,7 @@ const cron = require("node-cron");
 require("dotenv").config();
 
 const app = express();  
+const port = 3000;
 
 const corsOptions = {
     origin: '*', 
@@ -47,34 +48,6 @@ app.get("/", (req, res) => {
     res.send("Hello, this is the SMTP server.");
 });
 
-app.post("/send", (req, res) => {
-    const {  mail, subject, text} = req.body;
-
-    let transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-            user: `${process.env.MY_MAIL}`,
-            pass: `${process.env.MY_PASSWORD}`
-        }
-    });
-
-    let mailOptions = {
-        from: `${process.env.MY_MAIL}`,
-        to: mail,
-        subject: subject,
-        text: text
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.log(error);
-            res.status(500).send("E-posta gönderilirken bir hata oluştu.");
-        } else {
-            console.log("E-posta gönderildi: " + info.response);
-            res.status(200).send("E-posta başarıyla gönderildi.");
-        }
-    });
-});
 
 app.post("/sendReminder",(req,res)=>{
     const {customer}=req.body;
@@ -107,6 +80,39 @@ app.post("/sendReminder",(req,res)=>{
         }
     });
 
+})
+
+app.post("/send", (req, res) => {
+    const {  mail, subject, text} = req.body;
+
+    let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: `${process.env.MY_MAIL}`,
+            pass: `${process.env.MY_PASSWORD}`
+        }
+    });
+
+    let mailOptions = {
+        from: `${process.env.MY_MAIL}`,
+        to: mail,
+        subject: subject,
+        text: text
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+            res.status(500).send("E-posta gönderilirken bir hata oluştu.");
+        } else {
+            console.log("E-posta gönderildi: " + info.response);
+            res.status(200).send("E-posta başarıyla gönderildi.");
+        }
+    });
+});
+
+cron.schedule('0 8 * * *', () => {
+    sendDailyCustomerList();
 });
 
 function sendDailyCustomerList() {
@@ -159,7 +165,15 @@ function sendDailyEmail(customerList) {
     });
 }
 
+    let sentEmails = new Set();
+    setInterval(checkAppointments, 36000); 
+
+setInterval(() => {
+    sentEmails.clear();
+}, 24 * 60 * 60 * 1000); 
+
 function checkAppointments() {
+    console.log("Checking in progress wooooow!");
     const currentTime = new Date().getTime();
     const oneHourLater = currentTime + 3600000; 
 
@@ -209,6 +223,6 @@ function sendReminderEmail(customer) {
 }
 
 
-app.listen(process.env.PORT || 5000, () => {
-    console.log(`SMTP server is running at http://localhost:${process.env.PORT || 5000}`);
+app.listen(port, () => {
+    console.log(`SMTP server is running at http://localhost:${port}`);
 });
