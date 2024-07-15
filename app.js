@@ -172,6 +172,9 @@ async function checkAppointments() {
     const currentTime = new Date().getTime();
     const oneHourLater = currentTime + 3600000;
     console.log(currentTime);
+    console.log(new Date().toLocaleString());
+    console.log(new Date().toLocaleTimeString());
+
 
     try {
         const snapshot = await customersRef.once("value");
