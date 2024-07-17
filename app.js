@@ -111,7 +111,7 @@ app.post("/send", (req, res) => {
     });
 });
 
-cron.schedule('0 8 * * *', () => {
+app.post("/sendDailyCustomers",(req,res)=>{
     sendDailyCustomerList();
 });
 
@@ -164,58 +164,6 @@ function sendDailyEmail(customerList) {
         }
     });
 }
-
-function getTurkeyCurrentTime() {
-    return new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" });
-}
-
-function getTurkeyCurrentTimestamp() {
-    return new Date(getTurkeyCurrentTime()).getTime();
-}
-
-let sentEmails = new Set();
-sentEmails.clear();
-
-async function checkAppointments() {
-    console.log("Checking in progress wooooow!");
-    const currentTime = getTurkeyCurrentTimestamp();
-    const oneHourLater = currentTime + 3600000;
-    console.log("currentTime:", currentTime);
-    console.log("currentDateTime:", getTurkeyCurrentTime());
-
-    try {
-        const snapshot = await customersRef.once("value");
-        snapshot.forEach(async (childSnapshot) => {
-            const customer = childSnapshot.val();
-            console.log(customer);
-            const appointmentTime = new Date(customer.date).getTime();
-            console.log("appointmentTime:", appointmentTime);
-            console.log("currentTime:", currentTime);
-            console.log("oneHourLater:", oneHourLater);
-            console.log("here result 1");
-
-            if (appointmentTime <= oneHourLater && appointmentTime > currentTime && customer.statu === "gelmedi") {
-                console.log("here result 2");
-                if (!sentEmails.has(customer.email)) {
-                    console.log("here result 3");
-                    await sendReminderEmail(customer);
-                    sentEmails.add(customer.email);
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Error fetching appointments:", error);
-    }
-
-    setTimeout(checkAppointments, 36000); // Her saatte bir çalışacak şekilde ayarladım
-}
-
-// İlk çalıştırmayı başlatmak için
-checkAppointments();
-
-setInterval(() => {
-    sentEmails.clear();
-}, 24 * 60 * 60 * 1000); 
 
 function sendReminderEmail(customer) {
     const transporter = nodemailer.createTransport({
