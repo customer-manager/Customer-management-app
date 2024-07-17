@@ -132,6 +132,9 @@ function sendDailyCustomerList() {
             }
         });
 
+        // Randevu saatlerine göre sıralama
+        customerList.sort((a, b) => new Date(a.date) - new Date(b.date));
+
         if (customerList.length > 0) {
             sendDailyEmail(customerList);
         }
@@ -147,7 +150,13 @@ function sendDailyEmail(customerList) {
         }
     });
 
-    const customerDetails = customerList.map(customer => `${customer.name} - ${new Date(customer.date).toLocaleTimeString()}`).join('\n');
+    const customerDetails = customerList.map(customer => {
+        const appointmentDate = new Date(customer.date);
+        // Saatleri 24 saat formatında gösterme
+        const hours = String(appointmentDate.getHours()).padStart(2, '0');
+        const minutes = String(appointmentDate.getMinutes()).padStart(2, '0');
+        return `${customer.name} - ${hours}:${minutes}`;
+    }).join('\n');
 
     const mailOptions = {
         from: `${process.env.MY_MAIL}`,
@@ -164,6 +173,7 @@ function sendDailyEmail(customerList) {
         }
     });
 }
+
 
 function sendReminderEmail(customer) {
     const transporter = nodemailer.createTransport({
