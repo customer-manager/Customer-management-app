@@ -49,8 +49,8 @@ app.get("/", (req, res) => {
 });
 
 
-app.post("/sendReminder",(req,res)=>{
-    const {customer}=req.body;
+app.post("/sendReminder", (req, res) => {
+    const { customer } = req.body;
 
     const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -60,27 +60,25 @@ app.post("/sendReminder",(req,res)=>{
         }
     });
 
-    const appointmentTime = new Date(customer.date).getTime();
-    const currentTime = new Date().getTime();
-    const timeDiff = appointmentTime - currentTime;
-    const minutesLeft = Math.floor(timeDiff / (1000 * 60));
-
+    const appointmentTime = new Date(customer.date).toLocaleTimeString('tr-TR', { hour12: false });
     const mailOptions = {
         from: `${process.env.MY_MAIL}`,
-        to: customer.email, 
+        to: customer.email,
         subject: "Randevu Hatırlatma",
-        text: `Merhaba ${customer.name},\n\nRandevunuz için 1 saatten az zaman kaldı. Lütfen zamanında gelmeyi unutmayın.\n Kalan zaman:${minutesLeft} dakika.`
+        text: `Merhaba sayın ${customer.name},\n\nBugünkü randevunuzu hatırlatırız. Randevu saati: ${appointmentTime}.\nLütfen zamanında gelmeyi unutmayınız.`
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.log("E-posta gönderilirken hata oluştu:", error);
+            res.status(500).send("E-posta gönderilirken bir hata oluştu.");
         } else {
             console.log("E-posta başarıyla gönderildi:", info.response);
+            res.status(200).send("E-posta başarıyla gönderildi.");
         }
     });
+});
 
-})
 
 app.post("/send", (req, res) => {
     const {  mail, subject, text} = req.body;
